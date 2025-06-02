@@ -7,5 +7,7 @@ const router = express.Router();
 router.post('/', verifyToken, RoomController.createRoom);
 router.get('/', RoomController.getRooms);
 router.get('/mine', verifyToken, RoomController.getMyRooms);
+router.put('/:id', verifyToken, RoomController.updateRoom);
+router.delete('/:id', verifyToken, RoomController.deleteRoom);
 
 export default router;
