@@ -20,6 +20,7 @@ app.get('/', (_, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/users', userRoutes);
+app.use('/uploads', express.static('uploads'));
 
 const start = async () => {
   try {

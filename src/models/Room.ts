@@ -6,6 +6,7 @@ export interface IRoom extends mongoose.Document {
   price: number;
   location: string;
   user: mongoose.Schema.Types.ObjectId;
+  images: string[];
 }
 
 const roomSchema = new mongoose.Schema<IRoom>(
@@ -15,6 +16,7 @@ const roomSchema = new mongoose.Schema<IRoom>(
     price: { type: Number, required: true },
     location: { type: String, required: true },
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    images: [{ type: String }]
   },
   { timestamps: true }
 );
