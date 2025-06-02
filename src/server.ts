@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import cors from 'cors'
 import authRoutes from './routes/authRoutes';
 import roomRoutes from './routes/roomRoutes';
+import userRoutes from './routes/userRoutes';
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ app.get('/', (_, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/rooms', roomRoutes);
+app.use('/api/users', userRoutes);
 
 const start = async () => {
   try {
