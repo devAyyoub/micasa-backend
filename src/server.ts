@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors'
 import authRoutes from './routes/authRoutes';
+import roomRoutes from './routes/roomRoutes';
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ app.get('/', (_, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/rooms', roomRoutes);
 
 const start = async () => {
   try {
