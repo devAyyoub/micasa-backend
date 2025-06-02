@@ -33,4 +33,18 @@ export default class RoomController {
       res.status(500).json({ message: 'Error al obtener habitaciones', error: err });
     }
   };
+
+  static getMyRooms = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ message: 'No autorizado' });
+      return;
+    }
+
+    const myRooms = await Room.find({ user: req.user.id }).populate('user', 'name email');
+    res.status(200).json(myRooms);
+  } catch (err) {
+    res.status(500).json({ message: 'Error al obtener tus habitaciones', error: err });
+  }
+};
 }
