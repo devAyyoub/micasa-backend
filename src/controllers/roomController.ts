@@ -4,7 +4,7 @@ import Room from "../models/Room";
 export default class RoomController {
   static createRoom = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { title, description, price, location } = req.body;
+      const { title, description, price, location, images } = req.body;
 
       if (!req.user) {
         res.status(401).json({ message: "No autorizado" });
@@ -16,6 +16,7 @@ export default class RoomController {
         description,
         price,
         location,
+        images,
         user: req.user.id,
       });
 
@@ -154,7 +155,7 @@ export default class RoomController {
     try {
       const roomId = req.params.id;
 
-      const room = await Room.findById(roomId).populate("user", "name email");
+      const room = await Room.findById(req.params.id).populate("user", "name email");
 
       if (!room) {
         res.status(404).json({ message: "Habitación no encontrada" });
