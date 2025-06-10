@@ -3,7 +3,6 @@ import jwt from "jsonwebtoken";
 
 interface AuthPayload {
   id: string;
-  role: string;
 }
 
 declare global {

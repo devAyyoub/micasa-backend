@@ -3,34 +3,58 @@ import Room from "../models/Room";
 
 export default class RoomController {
   static createRoom = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const { title, description, price, location, images } = req.body;
+  try {
+    const {
+      title,
+      description,
+      price,
+      location,
+      images,
+      sociability,
+      rentalDuration,
+      minRoommateAge,
+      maxRoommateAge,
+      preferences,
+    } = req.body;
 
-      if (!req.user) {
-        res.status(401).json({ message: "No autorizado" });
-        return;
-      }
-
-      const room = await Room.create({
-        title,
-        description,
-        price,
-        location,
-        images,
-        user: req.user.id,
-      });
-
-      res.status(201).json(room);
-    } catch (err) {
-      res
-        .status(500)
-        .json({ message: "Error al crear habitación", error: err });
+    if (!req.user) {
+      res.status(401).json({ message: "No autorizado" });
+      return;
     }
-  };
+
+    const room = await Room.create({
+      title,
+      description,
+      price,
+      location,
+      images,
+      sociability,
+      rentalDuration,
+      minRoommateAge,
+      maxRoommateAge,
+      preferences,
+      user: req.user.id,
+    });
+
+    res.status(201).json(room);
+  } catch (err) {
+    res.status(500).json({ message: "Error al crear habitación", error: err });
+  }
+};
 
   static getRooms = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { location, maxPrice, minPrice, page = 1, limit = 10 } = req.query;
+      const {
+        location,
+        maxPrice,
+        minPrice,
+        sociability,
+        preferredGender,
+        allowsSmoking,
+        allowsPets,
+        page = 1,
+        limit = 10,
+      } = req.query;
 
       const filter: any = {};
 
@@ -43,6 +67,11 @@ export default class RoomController {
         if (minPrice) filter.price.$gte = Number(minPrice);
         if (maxPrice) filter.price.$lte = Number(maxPrice);
       }
+
+      if (sociability) filter.sociability = sociability;
+      if (preferredGender) filter.preferredGender = preferredGender;
+      if (allowsSmoking !== undefined) filter.allowsSmoking = allowsSmoking === "true";
+      if (allowsPets !== undefined) filter.allowsPets = allowsPets === "true";
 
       const pageNumber = Number(page);
       const limitNumber = Number(limit);
@@ -62,9 +91,7 @@ export default class RoomController {
         data: rooms,
       });
     } catch (err) {
-      res
-        .status(500)
-        .json({ message: "Error al filtrar habitaciones", error: err });
+      res.status(500).json({ message: "Error al filtrar habitaciones", error: err });
     }
   };
 
@@ -75,17 +102,13 @@ export default class RoomController {
         return;
       }
 
-      const myRooms = await Room.find({ user: req.user.id }).populate(
-        "user",
-        "name email"
-      );
+      const myRooms = await Room.find({ user: req.user.id }).populate("user", "name email");
       res.status(200).json(myRooms);
     } catch (err) {
-      res
-        .status(500)
-        .json({ message: "Error al obtener tus habitaciones", error: err });
+      res.status(500).json({ message: "Error al obtener tus habitaciones", error: err });
     }
   };
+
   static updateRoom = async (req: Request, res: Response): Promise<void> => {
     try {
       if (!req.user) {
@@ -103,9 +126,7 @@ export default class RoomController {
       }
 
       if (room.user.toString() !== req.user.id) {
-        res
-          .status(403)
-          .json({ message: "No tienes permiso para editar esta habitación" });
+        res.status(403).json({ message: "No tienes permiso para editar esta habitación" });
         return;
       }
 
@@ -114,9 +135,7 @@ export default class RoomController {
 
       res.status(200).json(room);
     } catch (err) {
-      res
-        .status(500)
-        .json({ message: "Error al editar la habitación", error: err });
+      res.status(500).json({ message: "Error al editar la habitación", error: err });
     }
   };
 
@@ -136,18 +155,14 @@ export default class RoomController {
       }
 
       if (room.user.toString() !== req.user.id) {
-        res
-          .status(403)
-          .json({ message: "No tienes permiso para eliminar esta habitación" });
+        res.status(403).json({ message: "No tienes permiso para eliminar esta habitación" });
         return;
       }
 
       await room.deleteOne();
       res.status(200).json({ message: "Habitación eliminada correctamente" });
     } catch (err) {
-      res
-        .status(500)
-        .json({ message: "Error al eliminar la habitación", error: err });
+      res.status(500).json({ message: "Error al eliminar la habitación", error: err });
     }
   };
 
@@ -155,7 +170,7 @@ export default class RoomController {
     try {
       const roomId = req.params.id;
 
-      const room = await Room.findById(req.params.id).populate("user", "name email");
+      const room = await Room.findById(roomId).populate("user", "name email");
 
       if (!room) {
         res.status(404).json({ message: "Habitación no encontrada" });
@@ -164,9 +179,7 @@ export default class RoomController {
 
       res.status(200).json(room);
     } catch (err) {
-      res
-        .status(500)
-        .json({ message: "Error al obtener la habitación", error: err });
+      res.status(500).json({ message: "Error al obtener la habitación", error: err });
     }
   };
 }

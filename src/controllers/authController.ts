@@ -5,7 +5,7 @@ import User, { IUser } from "../models/User";
 
 const generateToken = (user: IUser): string => {
   return jwt.sign(
-    { id: user._id, role: user.role },
+    { id: user._id },
     process.env.JWT_SECRET as string,
     { expiresIn: "7d" }
   );
@@ -14,7 +14,7 @@ const generateToken = (user: IUser): string => {
 export default class AuthController {
   static register = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { name, email, password, role } = req.body;
+      const { name, email, password } = req.body;
 
       const existingUser = await User.findOne({ email });
       if (existingUser) {
@@ -28,7 +28,6 @@ export default class AuthController {
         name,
         email,
         password: hashedPassword,
-        role,
       });
 
       const token = generateToken(user);
@@ -38,7 +37,6 @@ export default class AuthController {
           id: user._id,
           name: user.name,
           email: user.email,
-          role: user.role,
         },
       });
     } catch (err) {
@@ -69,7 +67,6 @@ export default class AuthController {
           id: user._id,
           name: user.name,
           email: user.email,
-          role: user.role,
         },
       });
     } catch (err) {
