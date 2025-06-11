@@ -5,6 +5,7 @@ import cors from 'cors'
 import authRoutes from './routes/authRoutes';
 import roomRoutes from './routes/roomRoutes';
 import userRoutes from './routes/userRoutes';
+import swipeRoutes from './routes/swipeRoutes';
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ app.get('/', (_, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/swipe', swipeRoutes);
 app.use('/uploads', express.static('uploads'));
 
 const start = async () => {
