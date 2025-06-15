@@ -3,7 +3,7 @@ import Room from "../models/Room";
 import { RoomLike } from "../models/RoomLike";
 import { RoomMatch } from "../models/RoomMatch";
 import { RoomView } from "../models/RoomView";
-import { OwnerLike } from "../models/OwnerLike";
+import { Notification } from "../models/Notification";
 
 export class SwipeController {
   static async getNextRoom(req: Request, res: Response): Promise<void> {
@@ -45,19 +45,12 @@ export class SwipeController {
 
     await RoomLike.create({ userId, roomId });
 
-    const reciprocal = await OwnerLike.findOne({
-      ownerId: room.user,
-      userId,
-      roomId,
+    await Notification.create({
+      userId: room.user,
+      type: "like",
+      message: `Un usuario ha dado like a tu habitación "${room.title}"`,
+      link: "/received-likes",
     });
-
-    if (reciprocal) {
-      await RoomMatch.create({
-        userId,
-        ownerId: room.user,
-        roomId,
-      });
-    }
 
     res.status(201).json({ message: "Like registrado." });
   }
@@ -72,21 +65,24 @@ export class SwipeController {
       return;
     }
 
-    const existing = await OwnerLike.findOne({ ownerId, userId, roomId });
-    if (existing) {
-      res.status(400).json({ message: "Ya diste like a este usuario." });
+    const reciprocal = await RoomLike.findOne({ userId, roomId });
+
+    if (!reciprocal) {
+      res.status(400).json({ message: "El usuario no ha dado like aún." });
       return;
     }
 
-    await OwnerLike.create({ ownerId, userId, roomId });
+    await RoomMatch.create({ userId, ownerId, roomId });
+    await RoomLike.deleteOne({ userId, roomId });
 
-    const reciprocal = await RoomLike.findOne({ userId, roomId });
+    await Notification.create({
+      userId,
+      type: "match",
+      message: `Has hecho match en la habitación "${room.title}"`,
+      link: "/matches",
+    });
 
-    if (reciprocal) {
-      await RoomMatch.create({ userId, ownerId, roomId });
-    }
-
-    res.status(201).json({ message: "Like al usuario registrado." });
+    res.status(201).json({ message: "Match creado exitosamente." });
   }
 
   static async getMatches(req: Request, res: Response): Promise<void> {
@@ -116,6 +112,35 @@ export class SwipeController {
     } catch (err) {
       console.error("Error en getLikesReceived:", err);
       res.status(500).json({ message: "Error al obtener likes recibidos." });
+    }
+  }
+
+  static async getNotifications(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.user!.id;
+
+      const notifications = await Notification.find({ userId })
+        .sort({ createdAt: -1 })
+        .lean();
+
+      res.json(notifications);
+    } catch (err) {
+      console.error("Error en getNotifications:", err);
+      res.status(500).json({ message: "Error al obtener notificaciones." });
+    }
+  }
+
+  static async markNotificationAsRead(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.user!.id;
+      const { notificationId } = req.params;
+
+      await Notification.updateOne({ _id: notificationId, userId }, { $set: { read: true } });
+
+      res.status(200).json({ message: "Notificación marcada como leída." });
+    } catch (err) {
+      console.error("Error al marcar notificación como leída:", err);
+      res.status(500).json({ message: "Error interno." });
     }
   }
 }
